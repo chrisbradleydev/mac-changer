@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import optparse
+import re
 import subprocess
 
 
@@ -23,5 +24,20 @@ def get_arguments():
     return options
 
 
+def get_mac(interface):
+    ifconfig_result = subprocess.check_output(["ifconfig", interface]).decode("utf-8")
+    mac_address_search_result = re.search(r"\w\w:\w\w:\w\w:\w\w:\w\w:\w\w", ifconfig_result)
+    if mac_address_search_result:
+        return mac_address_search_result.group(0)
+    else:
+        print("[-] could not read MAC address")
+
+
 parser_options = get_arguments()
 change_mac(parser_options.interface, parser_options.mac_address)
+current_mac = get_mac(parser_options.interface)
+
+if current_mac == parser_options.mac_address:
+    print(f"[+] MAC address successfully updated to {current_mac}")
+else:
+    print("[-] MAC address was not updated")
